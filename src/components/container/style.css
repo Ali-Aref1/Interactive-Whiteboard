@@ -1,5 +1,9 @@
 :root{
     --theme-switcher-bg : #a1a1a1;
+    --theme-switcher-circle : #ffffff;
+    --tool-selected: #686868;
+    --brush-cursor:url("./assets/bruhcursor-light.png");
+    --filter:none;
 }
 .container{
     display:flex;
@@ -10,7 +14,16 @@
 }
 .top-bar{
     display:flex;
+    top:-3px;
+    padding: 0px 15px;
+    border-radius: 0px 0px 20px 20px;
     justify-content: space-between;
+    align-items: center;
+    position:fixed;
+    width:calc(100% - 60px);
+    height:60px;
+    background-color: var(--theme-switcher-circle);
+    transition: background-color 200ms linear !important;
 }
 .top-bar input{
     width:120px;
@@ -32,4 +45,31 @@
 }
 .board-container{
     height:100%;
+}
+.top-left{
+    display:flex;
+    align-items: center;
+    justify-content: space-between;
+    gap:20px;
+    height:45px;
+}
+.tool-icon{
+    width:25px;
+    filter: var(--filter);
+}
+.tool-button{
+    width:30px;
+    height:30px;
+    position:relative;
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    background:transparent;
+    border-radius:50px;
+    transition:all 200ms linear;
+}
+.tool-button.active{
+    width:45px;
+    height:45px;
+    background-color: var(--tool-selected);
 }
