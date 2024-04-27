@@ -1,0 +1,6 @@
+.board{
+    border: 2px solid black;
+    border-radius:15px;
+    margin: 20px 0px;
+    height:100%;
+}

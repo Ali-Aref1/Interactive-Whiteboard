@@ -1,0 +1,19 @@
+.container{
+    display:flex;
+    flex-direction: column;
+    width:100%;
+    height:calc(100vh - 60px);
+}
+.color-picker{
+    display:flex;
+    justify-content: center;
+}
+.color-picker input{
+    width:120px;
+}
+.board-container{
+    height:100%;
+}
+.body{
+    
+}
