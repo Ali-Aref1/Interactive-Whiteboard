@@ -1,0 +1,41 @@
+:root{
+    --theme-switcher-bg : #a1a1a1;
+    --theme-switcher-circle : #ffffff;
+}
+#theme-switcher{
+    display:flex;
+}
+#check{
+    display:none;
+}
+
+#check + label{
+    font-weight:bold;
+    font-size:16pt;
+    display:flex;
+    align-items: center;
+}
+#check + label:before{
+    content: "";
+    display:block;
+    height:25px;
+    width:45px;
+    border-radius:16px;
+    transition: background-color 200ms linear !important;
+    background-color: var(--theme-switcher-bg);
+    cursor:pointer;
+}
+#check + label:after{
+    content:"";
+    height:20px;
+    width:20px;
+    border-radius:20px;
+    background-color: var(--theme-switcher-circle);
+    position: absolute;
+    margin-left:3px;
+    transition: all 0.2s;
+    cursor:pointer;
+}
+#check:checked + label::after{
+    transform: translateX(100%);
+}

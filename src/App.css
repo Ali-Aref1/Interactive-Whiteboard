@@ -1,0 +1,9 @@
+@font-face {
+    font-family: 'SF Pro';
+    src: url("./assets/fonts/SF-Pro.ttf");
+}
+body{
+    margin-top: 20px;
+    font-family: 'SF Pro';
+    transition: background-color 200ms linear !important;
+}
