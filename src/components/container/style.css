@@ -13,6 +13,7 @@
     margin:10px 30px;
 }
 .top-bar{
+    z-index: 1;
     display:flex;
     top:-3px;
     padding: 0px 15px;

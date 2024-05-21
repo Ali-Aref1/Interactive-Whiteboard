@@ -5,7 +5,6 @@ import {useState} from 'react'
 import PaintBrush from '../../assets/paint-brush.png'
 import Eraser from '../../assets/eraser.png'
 
-
 export const Container = () => {
   const [color, setColor] = useState('#000000');
   const [tool, setTool] = useState('brush');

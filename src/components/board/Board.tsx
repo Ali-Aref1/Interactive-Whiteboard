@@ -1,5 +1,9 @@
 import React, { useRef, useEffect, useState } from 'react';
+import * as io from "socket.io-client";
 import './style.css';
+const socket = io.connect('http://localhost:3001');
+console.log(socket);
+var temp: string = "";
 
 export interface BoardProps {
   color: string;
@@ -10,7 +14,6 @@ export interface BoardProps {
 export const Board: React.FC<BoardProps> = ({ color, tool, size }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
-  
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -19,37 +22,51 @@ export const Board: React.FC<BoardProps> = ({ color, tool, size }) => {
     const context = canvas.getContext('2d');
     if (!context) return;
 
+    const sendCanvasData = () =>{
+      const dataURL = canvas.toDataURL();
+      if(temp==dataURL){
+      }
+      else{
+        socket.emit('canvas-data', dataURL);
+        temp = dataURL;
+      }
+    }
     const handleMouseDown = (event: MouseEvent) => {
       const { offsetX, offsetY } = event;
       setIsDrawing(true);
-      context.beginPath(); // Start a new path
-      context.moveTo(offsetX, offsetY); // Move to the starting point
-      context.lineWidth = size; // Set the stroke size based on the 'size' prop
+      context.beginPath();
+      context.moveTo(offsetX, offsetY);
+      context.lineCap = "round";
     };
+
     const handleMouseMove = (event: MouseEvent) => {
       if (!isDrawing) return;
       const { offsetX, offsetY } = event;
       if (tool === "brush") {
-        context.lineTo(offsetX, offsetY); // Draw line to the current mouse position
-        context.strokeStyle = color; // Set the stroke color
-        context.lineWidth = size; // Set the stroke size based on the 'size' prop
-        context.stroke();
+        context.globalCompositeOperation = 'source-over';
+        context.strokeStyle = color;
       } else if (tool === "eraser") {
-        context.clearRect(offsetX, offsetY, size, size); // Erase at mouse position
+        context.strokeStyle = 'white';
       }
-      const root: any = this;
-      if (root) {
-        if(root.timeout) clearTimeout(root.timeout);
-        root.timeout = setTimeout(() => {
-          var base64ImageData = canvas.toDataURL("image/png");
-        }, 1000);
-      }
+      context.lineTo(offsetX, offsetY);
+      context.lineWidth = size;
+      context.stroke();
     };
 
     const handleMouseUp = () => {
       setIsDrawing(false);
+      sendCanvasData();
+    };
+    
+    const handleIncomingData = (dataURL: string) => {
+      const image = new Image();
+      image.src = dataURL;
+      image.onload = () => {
+        context.drawImage(image, 0, 0);
+      };
     };
 
+    socket.on('canvas-data', handleIncomingData);
     canvas.addEventListener('mousedown', handleMouseDown);
     canvas.addEventListener('mousemove', handleMouseMove);
     canvas.addEventListener('mouseup', handleMouseUp);
@@ -59,14 +76,14 @@ export const Board: React.FC<BoardProps> = ({ color, tool, size }) => {
       canvas.removeEventListener('mousemove', handleMouseMove);
       canvas.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDrawing, color]);
+  }, [isDrawing, color, tool, size]);
 
   return (
     <canvas
       ref={canvasRef}
       className="board"
-      width={1720} // Set your desired width
-      height={800} // Set your desired height
+      width={1720}
+      height={800}
     ></canvas>
   );
 };
