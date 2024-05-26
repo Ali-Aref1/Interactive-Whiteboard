@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import * as io from "socket.io-client";
 import './style.css';
-const socket = io.connect('http://localhost:3001');
+const socket = io.connect('http://192.168.1.10:3001');
 console.log(socket);
 var temp: string = "";
 
@@ -22,15 +22,15 @@ export const Board: React.FC<BoardProps> = ({ color, tool, size }) => {
     const context = canvas.getContext('2d');
     if (!context) return;
 
-    const sendCanvasData = () =>{
+    const sendCanvasData = () => {
       const dataURL = canvas.toDataURL();
-      if(temp==dataURL){
+      if (temp === dataURL) {
+        return;
       }
-      else{
-        socket.emit('canvas-data', dataURL);
-        temp = dataURL;
-      }
+      socket.emit('canvas-data', dataURL);
+      temp = dataURL;
     }
+
     const handleMouseDown = (event: MouseEvent) => {
       const { offsetX, offsetY } = event;
       setIsDrawing(true);
@@ -53,11 +53,42 @@ export const Board: React.FC<BoardProps> = ({ color, tool, size }) => {
       context.stroke();
     };
 
-    const handleMouseUp = () => {
+    const handleMouseUp = (event: MouseEvent) => {
+      handleMouseMove(event);
       setIsDrawing(false);
       sendCanvasData();
     };
-    
+
+    const handleTouchStart = (event: TouchEvent) => {
+      event.preventDefault();
+      const touch = event.touches[0];
+      const mouseEvent = new MouseEvent('mousedown', {
+        clientX: touch.clientX,
+        clientY: touch.clientY,
+      });
+      canvas.dispatchEvent(mouseEvent);
+    };
+
+    const handleTouchMove = (event: TouchEvent) => {
+      event.preventDefault();
+      const touch = event.touches[0];
+      const mouseEvent = new MouseEvent('mousemove', {
+        clientX: touch.clientX,
+        clientY: touch.clientY,
+      });
+      canvas.dispatchEvent(mouseEvent);
+    };
+
+    const handleTouchEnd = (event: TouchEvent) => {
+      event.preventDefault();
+      const touch = event.changedTouches[0];
+      const mouseEvent = new MouseEvent('mouseup', {
+        clientX: touch.clientX,
+        clientY: touch.clientY,
+      });
+      canvas.dispatchEvent(mouseEvent);
+    };
+
     const handleIncomingData = (dataURL: string) => {
       const image = new Image();
       image.src = dataURL;
@@ -70,11 +101,17 @@ export const Board: React.FC<BoardProps> = ({ color, tool, size }) => {
     canvas.addEventListener('mousedown', handleMouseDown);
     canvas.addEventListener('mousemove', handleMouseMove);
     canvas.addEventListener('mouseup', handleMouseUp);
+    canvas.addEventListener('touchstart', handleTouchStart);
+    canvas.addEventListener('touchmove', handleTouchMove);
+    canvas.addEventListener('touchend', handleTouchEnd);
 
     return () => {
       canvas.removeEventListener('mousedown', handleMouseDown);
       canvas.removeEventListener('mousemove', handleMouseMove);
       canvas.removeEventListener('mouseup', handleMouseUp);
+      canvas.removeEventListener('touchstart', handleTouchStart);
+      canvas.removeEventListener('touchmove', handleTouchMove);
+      canvas.removeEventListener('touchend', handleTouchEnd);
     };
   }, [isDrawing, color, tool, size]);
 
