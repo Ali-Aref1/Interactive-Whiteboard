@@ -1,7 +1,10 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, forwardRef, useImperativeHandle, Ref } from 'react';
 import * as io from "socket.io-client";
 import './style.css';
-const socket = io.connect('http://192.168.1.10:3001');
+
+const server_ip = window.location.hostname;
+const server_port = 3001;
+const socket = io.connect(`http://${server_ip}:${server_port}`);
 console.log(socket);
 var temp: string = "";
 
@@ -11,25 +14,46 @@ export interface BoardProps {
   size: number;
 }
 
-export const Board: React.FC<BoardProps> = ({ color, tool, size }) => {
+export interface BoardRef {
+  clearCanvas: () => void;
+}
+
+export const Board = forwardRef<BoardRef, BoardProps>(({ color, tool, size }, ref) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
+
+  useImperativeHandle(ref, () => ({
+    clearCanvas
+  }));
+
+  const clearCanvas = () => {
+    const canvas = canvasRef.current;
+    const context = canvas?.getContext('2d');
+    if (context && canvas) {
+      context.strokeStyle = 'white';
+      context.rect(0, 0, canvas.width, canvas.height);
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      sendCanvasData();
+    }
+  };
+
+  const sendCanvasData = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const dataURL = canvas.toDataURL();
+    if (temp === dataURL) {
+      return;
+    }
+    socket.emit('canvas-data', dataURL);
+    console.log("Canvas data sent");
+    temp = dataURL;
+  };
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
     const context = canvas.getContext('2d');
     if (!context) return;
-
-    const sendCanvasData = () => {
-      const dataURL = canvas.toDataURL();
-      if (temp === dataURL) {
-        return;
-      }
-      socket.emit('canvas-data', dataURL);
-      temp = dataURL;
-    }
 
     const handleMouseDown = (event: MouseEvent) => {
       const { offsetX, offsetY } = event;
@@ -42,14 +66,10 @@ export const Board: React.FC<BoardProps> = ({ color, tool, size }) => {
     const handleMouseMove = (event: MouseEvent) => {
       if (!isDrawing) return;
       const { offsetX, offsetY } = event;
-      if (tool === "brush") {
-        context.globalCompositeOperation = 'source-over';
-        context.strokeStyle = color;
-      } else if (tool === "eraser") {
-        context.strokeStyle = 'white';
-      }
       context.lineTo(offsetX, offsetY);
       context.lineWidth = size;
+      context.strokeStyle = tool === "brush" ? color : 'white';
+      context.globalCompositeOperation = tool === "brush" ? 'source-over' : 'destination-out';
       context.stroke();
     };
 
@@ -123,4 +143,4 @@ export const Board: React.FC<BoardProps> = ({ color, tool, size }) => {
       height={800}
     ></canvas>
   );
-};
+});
