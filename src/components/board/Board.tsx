@@ -1,8 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import * as io from "socket.io-client";
 import './style.css';
-const socket = io.connect('http://192.168.1.10:3001');
-console.log(socket);
+const socket = io.connect(`${location.hostname}:3001`);
 var temp: string = "";
 
 export interface BoardProps {
