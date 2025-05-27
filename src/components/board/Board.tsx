@@ -1,7 +1,8 @@
-import React, { useRef, useEffect, useState, forwardRef, useImperativeHandle, Ref } from 'react';
+import { useRef, useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 import * as io from "socket.io-client";
 import './style.css';
 const socket = io.connect(`${location.hostname}:3001`);
+console.log(`connected to ${location.hostname}:3001`)
 var temp: string = "";
 
 export interface BoardProps {
