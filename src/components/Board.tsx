@@ -221,7 +221,6 @@ const handleTrackMouse = (event: MouseEvent) => {
       {users.filter((user)=>{return user.id!=socket.id}).map((user) => (
         <MousePointer user={user} key={user.id} />
       ))} 
-      <button className='z-20' onClick={()=>{console.log(users)}}>test</button> 
     </div>
   );
 });

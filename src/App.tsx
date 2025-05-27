@@ -4,7 +4,7 @@ import { Container } from './components/Container'
 import { SocketContext } from './contexts/useSocket'
 import { io } from "socket.io-client"
 
-const socket = io(`34.238.253.130:3001`);
+const socket = io(`${window.location.hostname}:3001`);
 
 function App() {
   return (
