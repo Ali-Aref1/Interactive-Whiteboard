@@ -1,5 +1,5 @@
-import { Board, BoardRef } from './Board';
-import { ThemeSwitcher } from './ThemeSwitcher';
+import { Board, BoardRef } from '../components/Board';
+import { ThemeSwitcher } from '../components/ThemeSwitcher';
 import { useState, useRef } from 'react';
 import PaintBrush from '../assets/paint-brush.png';
 import Eraser from '../assets/eraser.png';

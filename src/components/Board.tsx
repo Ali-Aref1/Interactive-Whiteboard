@@ -18,7 +18,7 @@ export interface BoardRef {
 export const Board = forwardRef<BoardRef, BoardProps>(({ color, tool, size }, ref) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
-
+  
   const [users, setUsers] = useState<User[]>([]);
   const socket = useSocket();
 
@@ -185,6 +185,11 @@ const handleTrackMouse = (event: MouseEvent) => {
   }, [isDrawing, color, tool, size]);
 
   useEffect(() => {
+
+    if (socket && !socket.connected) {
+      socket.connect();
+    }
+
     const handleBeforeUnload = () => {
       socket.close();
     };

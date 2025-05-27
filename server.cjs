@@ -1,63 +1,36 @@
 const express = require('express');
 const app = express();
-const http = require('http');
-const {Server} = require('socket.io');
-const cors =  require('cors');
-const server = http.createServer(app);
-let canvasData;
-var temp;
-const io = new  Server(server,{
-    cors: {
-        methods: ['GET', 'POST']
-    }
-});
+const cors = require('cors');
+const { setupSocket } = require('./socket.cjs');
+const pool = require('./accounts.cjs').pool;
+const createUser = require('./accounts.cjs').createUser;
+const bcrypt = require('bcrypt');
+
 const server_port = 3001;
-server.listen(server_port, () => {
+
+
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+const server = app.listen(server_port, () => {
     console.log('listening on : ' + server_port);
 });
 
-const users=[];
+// Pass the server to the socket logic
+setupSocket(server);
 
-io.on('connection', (socket) => {
-    console.log('New user connected: '+socket.id);
-    users.push({name:"User",id:socket.id,mouse:{x:0,y:0}});
-    // Send the full user list (with mouse positions) to the new user
-    socket.emit('list-users', users); // <-- Add this line
-    // Notify others about the new user
-    socket.broadcast.emit('list-users', users);
-    socket.emit('canvas-data', canvasData);
-
-    socket.on('get-users', () => {
-        socket.emit('list-users', users);
-    });
-    socket.on('canvas-data', (data) => {
-        console.log("Canvas data received from user: "+socket.id);
-        canvasData=data;
-        socket.broadcast.except(socket).emit('canvas-data', canvasData);
-    });
-    socket.on('clear-canvas', () => {
-        console.log("Canvas cleared by user: "+socket.id);
-        canvasData = null;
-        socket.broadcast.emit('canvas-data', canvasData);
-    });
-
-    socket.on('track-mouse', (data) => {
-        const user = users.find(user => user.id === socket.id);
-        if (user) {
-            user.mouse = data;
-        }
-        const out = {
-            id: socket.id,
-            mouse: data
-        };
-        socket.broadcast.except(socket).emit('track-mouse', out);
-    });
-    socket.on('disconnect', () => {
-        console.log('a user disconnected');
-        users.splice(users.findIndex(user => user.id === socket.id), 1);
-        socket.broadcast.emit('list-users', users);
-    });
-
-
+app.post('/register', (req, res) => {
+    const { username, email, password } = req.body;
+    if (!username || !email || !password) {
+        return res.status(400).json({ error: 'Username, email, and password are required.' });
+    }
+    console.log(pool);
+    createUser(username.trim(), email.trim(), password.trim())
+        .then(userId => res.status(201).json({ userId }))
+        .catch(err => {
+            console.error(err);
+            res.status(500).json({ error: 'Internal server error' });
+        });
+    
 });
-

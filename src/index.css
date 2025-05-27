@@ -2,3 +2,6 @@
     margin-top: 20px;
 }
 @import "tailwindcss";
+@theme{
+    --background-image-home: url("./assets/bg.png");
+}

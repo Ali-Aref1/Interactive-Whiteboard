@@ -1,5 +1,10 @@
 import { useColorMode } from '@chakra-ui/react';
-export const ThemeSwitcher = () => {
+
+interface ThemeSwitcherProps {
+  className?: string;
+}
+
+export const ThemeSwitcher = ({className}:ThemeSwitcherProps) => {
         
     const { colorMode, setColorMode } = useColorMode();
 
@@ -13,7 +18,7 @@ export const ThemeSwitcher = () => {
         onClick={toggleColorMode}
         className={`
           transition-all! w-14 h-8 flex items-center cursor-pointer ${isDarkMode ? "bg-[#10141D]" : "bg-[#99A1AF]"} rounded-full p-1 duration-300 relative
-        `}
+        ${className}`}
         aria-label="Toggle theme"
       >
         <div
