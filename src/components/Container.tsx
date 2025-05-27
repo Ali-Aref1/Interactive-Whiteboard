@@ -5,6 +5,7 @@ import PaintBrush from '../assets/paint-brush.png';
 import Eraser from '../assets/eraser.png';
 import Clear from '../assets/clear.png';
 import { useColorMode } from '@chakra-ui/react';
+import { useSocket } from '../contexts/useSocket';
 
 export const Container: React.FC = () => {
   const [color, setColor] = useState('#000000');
@@ -13,10 +14,12 @@ export const Container: React.FC = () => {
   const boardRef = useRef<BoardRef>(null);
   const { colorMode } = useColorMode();
   const isDarkMode = colorMode === 'dark';
+  const socket = useSocket();
 
   const handleClear = () => {
     if (boardRef.current) {
       boardRef.current.clearCanvas();
+      socket.emit('clear-canvas');
     }
   };
 

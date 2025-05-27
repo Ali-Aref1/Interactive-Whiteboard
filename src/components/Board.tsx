@@ -1,8 +1,8 @@
 import { useRef, useEffect, useState, forwardRef, useImperativeHandle } from 'react';
-import * as io from "socket.io-client";
 import { User } from './interfaces/User';
 import { MousePointer } from './MousePointer';
-const socket = io.connect(`${window.location.hostname}:3001`);
+import { useSocket } from '../contexts/useSocket';
+
 var temp: string = "";
 
 export interface BoardProps {
@@ -20,14 +20,14 @@ export const Board = forwardRef<BoardRef, BoardProps>(({ color, tool, size }, re
   const [isDrawing, setIsDrawing] = useState(false);
 
   const [users, setUsers] = useState<User[]>([]);
+  const socket = useSocket();
 
   socket.on('connect', () => {
-    socket.emit('get-users'); // Join a specific room
+    socket.emit('get-users');
   })
 
   const listUsers = (users: User[]) => {
     setUsers(users);
-    console.log(users);
   }
 
   useImperativeHandle(ref, () => ({
@@ -58,16 +58,20 @@ export const Board = forwardRef<BoardRef, BoardProps>(({ color, tool, size }, re
     temp = dataURL;
   };
     
- const handleTrackMouse = ()=>{
-    canvasRef.current?.addEventListener('mousemove', (e) => {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      socket.emit('track-mouse', { x, y });
-    });
-  };
+// Throttle mouse tracking to reduce server load
+const lastEmitRef = useRef<number>(0);
+const handleTrackMouse = (event: MouseEvent) => {
+  const now = Date.now();
+  if (now - lastEmitRef.current < 25) return; // Emit at most every 50ms
+
+  lastEmitRef.current = now;
+  const canvas = canvasRef.current;
+  if (!canvas || !event) return;
+  const rect = canvas.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+  socket.emit('track-mouse', { x, y });
+};
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -95,7 +99,7 @@ export const Board = forwardRef<BoardRef, BoardProps>(({ color, tool, size }, re
     };
 
     const handleMouseMove = (event: MouseEvent) => {
-      handleTrackMouse();
+      handleTrackMouse(event);
       if (!isDrawing) return;
       const { x, y } = getScaledCoords(event);
       context.lineTo(x, y);
@@ -120,12 +124,15 @@ export const Board = forwardRef<BoardRef, BoardProps>(({ color, tool, size }, re
       });
       canvas.dispatchEvent(mouseEvent);
     };
-    const handleMouseUpdate = (data:any) =>{
-      const user = users.find(user => user.id === data.id);
-      if (user) {
-        user.mouse = data.mouse;
-        setUsers([...users]);
-      }
+    const handleMouseUpdate = (data: any) => {
+      if (data.id === socket.id) return; // Ignore own mouse updates
+      setUsers(users =>
+        users.some(user => user.id === data.id)
+          ? users.map(user =>
+              user.id === data.id ? { ...user, mouse: data.mouse } : user
+            )
+          : [...users, { id: data.id, name: "User", mouse: data.mouse }]
+      );
     }
 
     const handleTouchMove = (event: TouchEvent) => {
@@ -150,6 +157,7 @@ export const Board = forwardRef<BoardRef, BoardProps>(({ color, tool, size }, re
 
     const handleIncomingData = (dataURL: string) => {
       const image = new Image();
+      console.log(dataURL);
       image.src = dataURL;
       image.onload = () => {
         context.drawImage(image, 0, 0);
@@ -178,8 +186,6 @@ export const Board = forwardRef<BoardRef, BoardProps>(({ color, tool, size }, re
 
   useEffect(() => {
     const handleBeforeUnload = () => {
-      // Try to notify the server and close the socket
-      socket.emit('manual-disconnect');
       socket.close();
     };
 
@@ -187,7 +193,6 @@ export const Board = forwardRef<BoardRef, BoardProps>(({ color, tool, size }, re
 
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      // Do not call socket.close() here to avoid issues with React Strict Mode
     };
   }, []);
 
@@ -216,7 +221,7 @@ export const Board = forwardRef<BoardRef, BoardProps>(({ color, tool, size }, re
       {users.filter((user)=>{return user.id!=socket.id}).map((user) => (
         <MousePointer user={user} key={user.id} />
       ))} 
-      <button className='z-20'>test</button> 
+      <button className='z-20' onClick={()=>{console.log(users)}}>test</button> 
     </div>
   );
 });
