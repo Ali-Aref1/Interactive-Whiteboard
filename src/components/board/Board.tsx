@@ -1,10 +1,7 @@
 import { useRef, useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 import * as io from "socket.io-client";
 import './style.css';
-
-
-const HOST_IP = import.meta.env.VITE_HOST_IP || process.env.HOST_IP || 'localhost';
-const socket = io.connect(`${HOST_IP}:3001`);
+const socket = io.connect(`${window.location.hostname}:3001`);
 var temp: string = "";
 
 export interface BoardProps {
