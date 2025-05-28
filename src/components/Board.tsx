@@ -160,21 +160,11 @@ const handleTrackMouse = (event: MouseEvent) => {
     const handleMouseUpdate = (data: TrackMouseData) => {
       if (data.id === socket.id) return; // Ignore own mouse updates
       setUsers(users =>
-        users.some(user => user.boardData && user.boardData.socketId === data.id)
-          ? users.map(user =>
-              user.boardData && user.boardData.socketId === data.id
-                ? { ...user, boardData: { ...user.boardData, mouse: data.mouse, socketId: data.id } }
-                : user
-            )
-          : [
-              ...users,
-              {
-                userId: -1,
-                name: "User",
-                email: "",
-                boardData: { socketId: data.id, mouse: data.mouse },
-              },
-            ] as User[]
+      users.map(user =>
+        user.boardData && user.boardData.socketId === data.id
+        ? { ...user, boardData: { ...user.boardData, mouse: data.mouse } }
+        : user
+      )
       );
     };
 
