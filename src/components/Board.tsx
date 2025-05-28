@@ -245,6 +245,7 @@ const handleTrackMouse = (event: MouseEvent) => {
 
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
+      socket.close();
     };
   }, []);
 
