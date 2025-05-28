@@ -60,10 +60,8 @@ function setupSocket(server) {
             const out = {
                 id: socket.id,
                 mouse: data,
-                userId: user ? user.userId : -1,
-                username: user ? user.username : "User",
-                email: user ? user.email : ""
             };
+            console.log(socket.id, out);
             socket.broadcast.except(socket).emit('track-mouse', out);
         });
 
