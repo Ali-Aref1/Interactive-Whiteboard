@@ -169,6 +169,11 @@ const handleTrackMouse = (event: MouseEvent) => {
         : user
       )
       );
+      console.log(users.map(user =>
+        user.boardData && user.boardData.socketId === data.id
+        ? { ...user, boardData: { ...user.boardData, mouse: data.mouse } }
+        : user
+      ))
     };
 
     const handleTouchMove = (event: TouchEvent) => {
