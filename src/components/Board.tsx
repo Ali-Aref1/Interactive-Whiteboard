@@ -62,7 +62,7 @@ export const Board = forwardRef<BoardRef, BoardProps>(({ color, tool, size }, re
         email: user.email,
       });
     }
-  }, [socket && socket.connected, user]);
+  }, [socket, socket?.connected, user]);
 
   const clearCanvas = () => {
     const canvas = canvasRef.current;
