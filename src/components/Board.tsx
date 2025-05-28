@@ -23,7 +23,7 @@ export const Board = forwardRef<BoardRef, BoardProps>(({ color, tool, size }, re
   
   const [users, setUsers] = useState<User[]>([]);
   const socket = useSocket();
-  const { user, setUser } = useAuth(); // <-- get user and setUser from context
+  const { user } = useAuth(); // <-- get user and setUser from context
   if(!user) return <Navigate to="/login" replace={true} />; // Redirect to login if user is not authenticated
   useEffect(() => {
     const handleConnect = () => {
