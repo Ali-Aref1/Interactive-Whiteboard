@@ -123,6 +123,7 @@ const handleTrackMouse = (event: MouseEvent) => {
 };
 
 const handleLogOutElsewhere = () => {
+  console.log("Logging out from another window");
   socket.emit('logmeout', user);
   setError(null);
 }
