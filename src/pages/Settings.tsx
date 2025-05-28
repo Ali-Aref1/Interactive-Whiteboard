@@ -46,7 +46,7 @@ const handleUpload = async (e: React.FormEvent) => {
         formData.append("username", user.username);
         formData.append("file", selectedFile);
 
-        const response = await fetch("http://localhost:3001/profile-pic", {
+        const response = await fetch(`http://${window.location.hostname}:3001/profile-pic`, {
             method: "POST",
             body: formData,
         });
