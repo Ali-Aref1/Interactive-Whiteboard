@@ -22,27 +22,29 @@ function setupSocket(server) {
             const idx = users.findIndex(u => u.socketId === socket.id);
             if (idx !== -1) users.splice(idx, 1);
 
-            // Add new user info
+            // Add new user info (with empty mouse by default)
             users.push({
                 socketId: socket.id,
                 userId: userData.userId,
                 username: userData.username,
                 email: userData.email,
+                mouse: { x: 0, y: 0 }
             });
             console.log(users);
 
-            // Optionally emit updated user list
             io.emit('list-users', users);
         });
 
         socket.on('get-users', () => {
             socket.emit('list-users', users);
         });
+
         socket.on('canvas-data', (data) => {
             console.log("Canvas data received from user: " + socket.id);
             canvasData = data;
             socket.broadcast.except(socket).emit('canvas-data', canvasData);
         });
+
         socket.on('clear-canvas', () => {
             console.log("Canvas cleared by user: " + socket.id);
             canvasData = null;
@@ -50,23 +52,24 @@ function setupSocket(server) {
         });
 
         socket.on('track-mouse', (data) => {
-            const user = users.find(user => user.id === socket.id);
+            // Find user by socketId
+            const user = users.find(user => user.socketId === socket.id);
             if (user) {
                 user.mouse = data;
             }
             const out = {
                 id: socket.id,
-                mouse: data
+                mouse: data,
+                userId: user ? user.userId : -1,
+                username: user ? user.username : "User",
+                email: user ? user.email : ""
             };
             socket.broadcast.except(socket).emit('track-mouse', out);
         });
+
         socket.on('disconnect', () => {
             console.log('a user disconnected');
-            users.splice(users.findIndex(user => user.id === socket.id), 1);
-            socket.broadcast.emit('list-users', users);
-
-            // Remove user from array on disconnect
-            const idx = users.findIndex(u => u.socketId === socket.id);
+            const idx = users.findIndex(user => user.socketId === socket.id);
             if (idx !== -1) users.splice(idx, 1);
             io.emit('list-users', users);
         });
