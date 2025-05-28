@@ -3,6 +3,7 @@ import { User, UserBoardData } from './interfaces/User';
 import { MousePointer } from './MousePointer';
 import { useSocket } from '../contexts/useSocket';
 import { useAuth } from '../contexts/useAuth'; // <-- import useAuth
+import { Navigate } from 'react-router-dom';
 
 var temp: string = "";
 
@@ -23,10 +24,19 @@ export const Board = forwardRef<BoardRef, BoardProps>(({ color, tool, size }, re
   const [users, setUsers] = useState<User[]>([]);
   const socket = useSocket();
   const { user, setUser } = useAuth(); // <-- get user and setUser from context
-
-  socket.on('connect', () => {
-    socket.emit('get-users');
-  })
+  if(!user) return <Navigate to="/login" replace={true} />; // Redirect to login if user is not authenticated
+  useEffect(() => {
+    const handleConnect = () => {
+      socket.emit('new-login',user);
+    };
+    
+    socket.on('connect', handleConnect);
+    
+    // Clean up event listener on unmount
+    return () => {
+      socket.off('connect', handleConnect);
+    };
+  }, [socket]); // Only re-register if socket changes
 
   const listUsers = (users: User[]) => {
     setUsers(users);
@@ -36,29 +46,7 @@ export const Board = forwardRef<BoardRef, BoardProps>(({ color, tool, size }, re
     clearCanvas
   }));
 
-  // Attach boardData to user context on mount
-  useEffect(() => {
-    if (socket && socket.id && user) {
-      const boardData: UserBoardData = {
-        socketId: socket.id,
-        mouse: { x: 0, y: 0 },
-      };
-      setUser({ ...user, boardData });
-    }
-    // Only run when socket.id or user changes
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [socket && socket.id, user]);
 
-  // Emit user-auth event after socket connects and user is available
-  useEffect(() => {
-    if (socket && socket.connected && user && !user.userId) {
-      socket.emit('user-auth', {
-        userId: user.userId,
-        username: user.username,
-        email: user.email,
-      });
-    }
-  }, [socket?.connected, user]);
 
   const clearCanvas = () => {
     const canvas = canvasRef.current;
@@ -79,6 +67,7 @@ export const Board = forwardRef<BoardRef, BoardProps>(({ color, tool, size }, re
     if (temp === dataURL) {
       return;
     }
+    console.log(socket.connected);
     if(socket && socket.connected){
     socket.emit('canvas-data', dataURL);
     console.log("Canvas data sent");
@@ -88,6 +77,7 @@ export const Board = forwardRef<BoardRef, BoardProps>(({ color, tool, size }, re
     
 // Throttle mouse tracking to reduce server load
 const lastEmitRef = useRef<number>(0);
+
 const handleTrackMouse = (event: MouseEvent) => {
   const now = Date.now();
   if (now - lastEmitRef.current < 25) return; // Emit at most every 50ms
@@ -138,6 +128,7 @@ const handleTrackMouse = (event: MouseEvent) => {
     };
 
     const handleMouseUp = (event: MouseEvent) => {
+      console.log(socket.connected);
       handleMouseMove(event);
       setIsDrawing(false);
       sendCanvasData();
@@ -214,7 +205,6 @@ const handleTrackMouse = (event: MouseEvent) => {
 
     const handleIncomingData = (dataURL: string) => {
       const image = new Image();
-      console.log(dataURL);
       image.src = dataURL;
       image.onload = () => {
         context.drawImage(image, 0, 0);
@@ -258,6 +248,18 @@ const handleTrackMouse = (event: MouseEvent) => {
     };
   }, []);
 
+  useEffect(() => {
+    const handleListUsers = (usersList: User[]) => {
+      setUsers(usersList);
+    };
+    
+    socket.on('list-users', handleListUsers);
+    
+    return () => {
+      socket.off('list-users', handleListUsers);
+    };
+  }, [socket]);
+
   return (
     <div
       style={{
@@ -288,3 +290,5 @@ const handleTrackMouse = (event: MouseEvent) => {
     </div>
   );
 });
+
+

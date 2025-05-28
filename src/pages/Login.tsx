@@ -37,7 +37,7 @@ export const Login = () => {
                     const newData = {
                         userId: data.id,
                         username: data.username,
-                        email: data.email,
+                        email: data.email
                     }
                     setUser(newData);
                     Navigate('/draw');
