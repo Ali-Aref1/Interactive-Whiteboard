@@ -3,7 +3,13 @@ const { Server } = require('socket.io');
 let canvasData;
 const users = [];
 
-function broadcastUserList(io) {
+
+
+function setupSocket(server) {
+  const io = new Server(server, {
+    cors:{ methods:['GET','POST'] }
+  });
+  function broadcastUserList(io) {
   const payload = users.map(u => ({
     userId:   u.userId,
     username: u.username,
@@ -15,11 +21,17 @@ function broadcastUserList(io) {
   }));
   io.emit('list-users', payload);
 }
-
-function setupSocket(server) {
-  const io = new Server(server, {
-    cors:{ methods:['GET','POST'] }
-  });
+const addUser = (userData,socketId) => {
+  if (!userData.userId) return;
+        users.push({
+        socketId: socketId,
+        userId:   userData.userId,
+        username: userData.username,
+        email:    userData.email,
+        mouse:    { x:0, y:0 }
+      });
+      broadcastUserList(io);
+    }
 
   io.on('connection', socket => {
     console.log('New user connected:', socket.id);
@@ -38,46 +50,23 @@ function setupSocket(server) {
         socket.emit('auth-error', { message: 'Username already connected.' });
         return;
       }
-      users.push({
-        socketId: socket.id,
-        userId:   userData.userId,
-        username: userData.username,
-        email:    userData.email,
-        mouse:    { x:0, y:0 }
-      });
-      // now broadcast in correct shape
-      broadcastUserList(io);
+      addUser(userData,socket.id);
+
     });
 
-    socket.on('logmeout',()=>{
-      const user = users.find(u => u.username === userData.username && u.socketId !== socket.id);
-      console.log(`user ${user} requested logout`)
-      if (user) {
-        const sameUsernameSockets = users.filter(u => u.username === user.username && u.socketId !== socket.id);
-        sameUsernameSockets.forEach(u => {
+    socket.on('logmeout',(userData)=>{
+      const duplicateusers = users.filter(u => u.username === userData.username && u.socketId !== socket.id);
+      if (duplicateusers.length > 0) {
+        duplicateusers.forEach(u => {
           io.to(u.socketId).emit('logout');
         });
         // Remove the sender from users
         const idx = users.findIndex(u => u.socketId === socket.id);
         if (idx !== -1) users.splice(idx, 1);
+        addUser(userData,socket.id);
         broadcastUserList(io);
       }
     })
-
-    // socket.on('new-login', (data) => {
-    //   users.push(
-    //     {
-    //       socketId: socket.id,
-    //       userId:   data.userId || -1,
-    //       username: data.username || "User",
-    //       email:    data.email || "",
-    //       mouse:    { x:0, y:0 }
-    //     }
-    //   )
-    //   console.log(users)
-    //   broadcastUserList(io)
-    
-    // });
 
     socket.on('canvas-data', data => {
       canvasData = data;

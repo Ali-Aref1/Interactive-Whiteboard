@@ -322,7 +322,16 @@ const handleLogOutElsewhere = () => {
             {error?.message}
           </ModalBody>
           <ModalFooter>
-            <Button colorScheme="blue" onClick={() => {error?.id=="auth-error"?handleLogOutElsewhere:error?.id=="logout"?handleLogout():setError(null)}}>
+            <Button colorScheme="blue" onClick={() => {
+                if (error?.id === "auth-error") {
+                handleLogOutElsewhere();
+                } else if (error?.id === "logout") {
+                handleLogout();
+                } else {
+                setError(null);
+                }
+              
+              }}>
               OK
             </Button>
           </ModalFooter>
