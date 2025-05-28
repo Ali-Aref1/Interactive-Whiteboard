@@ -26,7 +26,6 @@ app.post('/register', (req, res) => {
     if (!username || !email || !password) {
         return res.status(400).json({ error: 'Username, email, and password are required.' });
     }
-    console.log(pool);
     createUser(username.trim(), email.trim(), password.trim())
         .then(userId => res.status(201).json({ userId }))
         .catch(err => {

@@ -49,6 +49,17 @@ export const Board = forwardRef<BoardRef, BoardProps>(({ color, tool, size }, re
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [socket && socket.id, user]);
 
+  // Emit user-auth event after socket connects and user is available
+  useEffect(() => {
+    if (socket && socket.connected && user) {
+      socket.emit('user-auth', {
+        userId: user.userId,
+        username: user.name,
+        email: user.email,
+      });
+    }
+  }, [socket && socket.connected, user]);
+
   const clearCanvas = () => {
     const canvas = canvasRef.current;
     const context = canvas?.getContext('2d');

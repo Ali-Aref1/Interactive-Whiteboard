@@ -12,10 +12,27 @@ function setupSocket(server) {
 
     io.on('connection', (socket) => {
         console.log('New user connected: ' + socket.id);
-        users.push({ name: "User", id: socket.id, mouse: { x: 0, y: 0 } });
         socket.emit('list-users', users);
         socket.broadcast.emit('list-users', users);
         socket.emit('canvas-data', canvasData);
+
+        // Listen for user-auth event
+        socket.on('user-auth', (userData) => {
+            // Remove any existing entry for this socket
+            const idx = users.findIndex(u => u.socketId === socket.id);
+            if (idx !== -1) users.splice(idx, 1);
+
+            // Add new user info
+            users.push({
+                socketId: socket.id,
+                userId: userData.userId,
+                username: userData.username,
+                email: userData.email,
+            });
+
+            // Optionally emit updated user list
+            io.emit('list-users', users);
+        });
 
         socket.on('get-users', () => {
             socket.emit('list-users', users);
@@ -46,6 +63,11 @@ function setupSocket(server) {
             console.log('a user disconnected');
             users.splice(users.findIndex(user => user.id === socket.id), 1);
             socket.broadcast.emit('list-users', users);
+
+            // Remove user from array on disconnect
+            const idx = users.findIndex(u => u.socketId === socket.id);
+            if (idx !== -1) users.splice(idx, 1);
+            io.emit('list-users', users);
         });
     });
 }
