@@ -29,10 +29,10 @@ export const Login = () => {
             if (!response.ok) {
                 window.alert(data.error || 'Login failed');
             } else {
-                const { user } = data;
-                if (user) {
+                if (data) {
                     const { setUser } = useAuth();
-                    setUser(user);
+
+                    setUser(data);
                     window.location.href = '/draw';
                 } else {
                     window.alert('Login successful but no user data returned');

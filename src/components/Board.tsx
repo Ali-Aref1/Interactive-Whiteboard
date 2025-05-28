@@ -2,6 +2,7 @@ import { useRef, useEffect, useState, forwardRef, useImperativeHandle } from 're
 import { User, UserBoardData } from './interfaces/User';
 import { MousePointer } from './MousePointer';
 import { useSocket } from '../contexts/useSocket';
+import { useAuth } from '../contexts/useAuth'; // <-- import useAuth
 
 var temp: string = "";
 
@@ -21,6 +22,7 @@ export const Board = forwardRef<BoardRef, BoardProps>(({ color, tool, size }, re
   
   const [users, setUsers] = useState<User[]>([]);
   const socket = useSocket();
+  const { user, setUser } = useAuth(); // <-- get user and setUser from context
 
   socket.on('connect', () => {
     socket.emit('get-users');
@@ -33,6 +35,19 @@ export const Board = forwardRef<BoardRef, BoardProps>(({ color, tool, size }, re
   useImperativeHandle(ref, () => ({
     clearCanvas
   }));
+
+  // Attach boardData to user context on mount
+  useEffect(() => {
+    if (socket && socket.id && user) {
+      const boardData: UserBoardData = {
+        socketId: socket.id,
+        mouse: { x: 0, y: 0 },
+      };
+      setUser({ ...user, boardData });
+    }
+    // Only run when socket.id or user changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [socket && socket.id, user]);
 
   const clearCanvas = () => {
     const canvas = canvasRef.current;
@@ -134,10 +149,10 @@ const handleTrackMouse = (event: MouseEvent) => {
     const handleMouseUpdate = (data: TrackMouseData) => {
       if (data.id === socket.id) return; // Ignore own mouse updates
       setUsers(users =>
-        users.some(user => user.boardData.socketId === data.id)
+        users.some(user => user.boardData && user.boardData.socketId === data.id)
           ? users.map(user =>
-              user.boardData.socketId === data.id
-                ? { ...user, boardData: { ...user.boardData, mouse: data.mouse } }
+              user.boardData && user.boardData.socketId === data.id
+                ? { ...user, boardData: { ...user.boardData, mouse: data.mouse, socketId: data.id } }
                 : user
             )
           : [
@@ -148,7 +163,7 @@ const handleTrackMouse = (event: MouseEvent) => {
                 email: "",
                 boardData: { socketId: data.id, mouse: data.mouse },
               },
-            ]
+            ] as User[]
       );
     };
 
@@ -241,9 +256,9 @@ const handleTrackMouse = (event: MouseEvent) => {
       height={700}
       ></canvas>
       {users
-        .filter((user) => user.boardData.socketId !== socket.id)
+        .filter((user) => user.boardData?.socketId !== socket.id)
         .map((user) => (
-          <MousePointer user={user} key={user.boardData.socketId} />
+          <MousePointer user={user} key={user.boardData?.socketId} />
         ))}
     </div>
   );
