@@ -34,7 +34,12 @@ export const Login = () => {
                 window.alert(data.error || 'Login failed');
             } else {
                 if (data) {
-                    setUser(data);
+                    const newData = {
+                        userId: data.id,
+                        username: data.username,
+                        email: data.email,
+                    }
+                    setUser(newData);
                     Navigate('/draw');
                 } else {
                     window.alert('Login successful but no user data returned');
