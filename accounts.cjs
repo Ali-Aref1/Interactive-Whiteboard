@@ -27,7 +27,7 @@ async function createUser(username, email, password) {
     if (result.affectedRows > 0) {
       const params = {
       Message: `New user registered: ${username} (${email})`,
-      TopicArn: 'arn:aws:sns:us-east-1:033369163956:NewUserRegistered',
+      TopicArn: 'arn:aws:sns:us-east-1:033369163956:user_registeration',
           
   };
     await sns.publish(params).promise();

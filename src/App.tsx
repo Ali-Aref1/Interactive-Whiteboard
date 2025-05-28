@@ -12,7 +12,7 @@ import { handleAutoLogin } from './utils'
 function App() {
   const socket = io(`${window.location.hostname}:3001`, { autoConnect: false });
   useEffect(()=>{
-    handleAutoLogin(setUser);
+    if(!user)handleAutoLogin(setUser);
   },[])
   const [user, setUser] = useState<User | null>(null);
 
