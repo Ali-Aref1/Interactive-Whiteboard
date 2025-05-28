@@ -49,6 +49,9 @@ export const Board = forwardRef<BoardRef, BoardProps>(({ color, tool, size }, re
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [socket && socket.id, user]);
 
+  useEffect(() => {
+    console.log(users)}, [users]);
+
   // Emit user-auth event after socket connects and user is available
   useEffect(() => {
     if (socket && socket.connected && user) {
