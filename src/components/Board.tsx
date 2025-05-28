@@ -158,22 +158,39 @@ const handleTrackMouse = (event: MouseEvent) => {
     interface TrackMouseData {
       id: string;
       mouse: UserBoardData['mouse'];
+      userId: number;
+      username: string;
+      email: string;
     }
 
     const handleMouseUpdate = (data: TrackMouseData) => {
-      if (data.id === socket.id) return; // Ignore own mouse updates
-      setUsers(users =>
-      users.map(user =>
-        user.boardData && user.boardData.socketId === data.id
-        ? { ...user, boardData: { ...user.boardData, mouse: data.mouse } }
-        : user
-      )
-      );
-      console.log(users.map(user =>
-        user.boardData && user.boardData.socketId === data.id
-        ? { ...user, boardData: { ...user.boardData, mouse: data.mouse } }
-        : user
-      ))
+      if (data.id === socket.id) return;
+      setUsers(users => {
+        const exists = users.some(user => user.boardData?.socketId === data.id);
+        if (exists) {
+          return users.map(user =>
+            user.boardData?.socketId === data.id
+              ? {
+                  ...user,
+                  userId: data.userId,
+                  username: data.username,
+                  email: data.email,
+                  boardData: { ...user.boardData, mouse: data.mouse }
+                }
+              : user
+          );
+        } else {
+          return [
+            ...users,
+            {
+              userId: data.userId,
+              username: data.username,
+              email: data.email,
+              boardData: { socketId: data.id, mouse: data.mouse }
+            }
+          ];
+        }
+      });
     };
 
     const handleTouchMove = (event: TouchEvent) => {
