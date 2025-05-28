@@ -6,6 +6,8 @@ import Eraser from '../assets/eraser.png';
 import Clear from '../assets/clear.png';
 import { useColorMode } from '@chakra-ui/react';
 import { useSocket } from '../contexts/useSocket';
+import { FaHome } from "react-icons/fa";
+import { Link } from 'react-router-dom';
 
 export const Container: React.FC = () => {
   const [color, setColor] = useState('#000000');
@@ -24,9 +26,13 @@ export const Container: React.FC = () => {
   };
 
   return (
+    <div className="bg-home relative h-screen flex flex-col">
     <div className="flex flex-col w-[calc(100%-60px)] h-[calc(100vh-60px)] m-[10px_30px]">
       <div className={`z-10 flex fixed top-[-3px] px-[15px] rounded-b-[20px] justify-between items-center w-[calc(100%-60px)] h-[60px] ${isDarkMode?"bg-[#1c2330]":"bg-[#dfdfdf]"} transition-colors!`}>
         <div className="flex items-center gap-5 h-[45px]">
+          <Link to="/" className={`border-4! ${isDarkMode?"border-white!":"border-[#10141D]!"} transition-all duration-200 p-1 border-solid rounded-full cursor-pointer flex justify-center items-center transition-all duration-200 hover:scale-110`} onClick={() => window.location.href = '/'}>  
+            <FaHome size={30} />
+          </Link>
           <input
             type="color"
             onChange={(e) => setColor(e.target.value)}
@@ -56,6 +62,7 @@ export const Container: React.FC = () => {
       
         <Board color={color} tool={tool} size={size} ref={boardRef} />
       </div>
+    </div>
     </div>
   );
 };

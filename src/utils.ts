@@ -32,7 +32,8 @@ export const handleLogin = async (
                     email: data.email
                 }
                 setUser(newData);
-                Navigate('/draw');
+                localStorage.setItem('InkSyncUser', JSON.stringify(newData));
+                Navigate('/');
             } else {
                 window.alert('Login successful but no user data returned');
             }
@@ -40,4 +41,29 @@ export const handleLogin = async (
     } catch (error) {
         window.alert(error instanceof Error ? error.message : 'An unexpected error occurred');
     }
+}
+
+export const handleAutoLogin = (
+  setUser: React.Dispatch<React.SetStateAction<any>>,
+) => {
+  const stored = localStorage.getItem('InkSyncUser');
+  if (!stored) return;
+
+  try {
+    const user = JSON.parse(stored);
+    // you can add extra checks here if you like
+    setUser(user);
+  } catch {
+    console.warn('Failed to parse stored user');
+  }
+};
+
+export const handleLogout = (
+    setUser: React.Dispatch<React.SetStateAction<any>>,
+    Navigate: ReturnType<typeof useNavigate>
+) => {
+    localStorage.removeItem('InkSyncUser');
+    console.log('User logged out');
+    setUser(null);
+    Navigate('/');
 }

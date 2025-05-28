@@ -1,9 +1,13 @@
 import { useColorMode } from "@chakra-ui/react";
 import { ThemeSwitcher } from "../components/ThemeSwitcher";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/useAuth";
+import { handleLogout } from "../utils";
 
 export const Home = () => {
   const { colorMode } = useColorMode();
+  const { user,setUser } = useAuth();
+  const nav =  useNavigate();
   const isDarkMode = colorMode === "dark";
   const colorModeClass = isDarkMode
     ? "bg-[#10141D] text-white hover:shadow-[0_0_16px_4px_rgba(0,255,255,0.4)]"
@@ -15,11 +19,28 @@ export const Home = () => {
       {/* Top bar */}
       <div className="flex items-center justify-between px-8 py-6">
         <div className="flex-1 flex justify-center">
-          <p className="text-[48px] text-center">Welcome to InkSync!</p>
+          <p className="text-[48px] text-center">{`Welcome to InkSync${user?`, ${user.username}`:``}!`}</p>
         </div>
       </div>
       <div className="flex-1 flex flex-col items-center justify-center gap-8 pb-32">
-        <Link to ="/login">
+        {user?
+        
+        <>
+        <Link to ="/draw">
+        <div
+          className={`w-42 text-center text-[32px] px-2 rounded-lg ${colorModeClass} cursor-pointer transition-shadow duration-300`}
+        >
+          DRAW
+
+        </div>
+        </Link>
+        <div
+          className={`w-42 text-center text-[32px] px-2 rounded-lg ${colorModeClass} cursor-pointer transition-shadow duration-300`}
+          onClick={()=>{handleLogout(setUser,nav);}}
+        >
+          LOG OUT
+        </div>
+        </>:<><Link to ="/login">
         <div
           className={`w-42 text-center text-[32px] px-2 rounded-lg ${colorModeClass} cursor-pointer transition-shadow duration-300`}
         >
@@ -33,6 +54,11 @@ export const Home = () => {
           REGISTER
         </div>
         </Link>
+        </>
+        
+        }
+        
+        
       </div>
     </div>
     </>
