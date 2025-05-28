@@ -3,9 +3,11 @@ import { useColorMode } from '@chakra-ui/react';
 import { ThemeSwitcher } from '../components/ThemeSwitcher';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/useAuth'
+import { useNavigate } from 'react-router-dom';
 
 export const Login = () => {
     const { colorMode } = useColorMode();
+    const Navigate = useNavigate();
     const isDarkMode = colorMode === 'dark';
     const [form, setForm] = useState({ username: '', password: '' });
     const server = `${window.location.hostname}:3001`;
@@ -33,7 +35,7 @@ export const Login = () => {
                     const { setUser } = useAuth();
 
                     setUser(data);
-                    window.location.href = '/draw';
+                    Navigate('/draw');
                 } else {
                     window.alert('Login successful but no user data returned');
                 }
