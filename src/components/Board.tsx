@@ -313,7 +313,7 @@ const handleLogOutElsewhere = () => {
         .map((user) => (
           <MousePointer user={user} key={user.boardData?.socketId} />
         ))}
-      <Modal isOpen={!!error} onClose={() => setError(null)}>
+      <Modal isOpen={!!error} onClose={() => setError(null)} isCentered size={"lg"}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Error</ModalHeader>
