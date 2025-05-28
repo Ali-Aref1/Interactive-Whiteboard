@@ -11,7 +11,7 @@ export const MousePointer = ({ user }: MousePointerProps) => {
             <div className="bg-red-500 w-fit p-1 rounded-full rounded-tl-none">
                 <FaUserCircle size={25} />
             </div>
-            {user.name && (
+            {user.username && (
                 <p
                     style={{
                         textShadow: `
@@ -22,7 +22,7 @@ export const MousePointer = ({ user }: MousePointerProps) => {
                         `
                     }}
                 >
-                    {user.name}
+                    {user.username}
                 </p>
             )}
         </div>

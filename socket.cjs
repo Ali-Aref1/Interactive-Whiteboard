@@ -29,6 +29,7 @@ function setupSocket(server) {
                 username: userData.username,
                 email: userData.email,
             });
+            console.log(users);
 
             // Optionally emit updated user list
             io.emit('list-users', users);

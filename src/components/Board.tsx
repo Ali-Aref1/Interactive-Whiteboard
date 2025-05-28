@@ -54,7 +54,7 @@ export const Board = forwardRef<BoardRef, BoardProps>(({ color, tool, size }, re
     if (socket && socket.connected && user) {
       socket.emit('user-auth', {
         userId: user.userId,
-        username: user.name,
+        username: user.username,
         email: user.email,
       });
     }
