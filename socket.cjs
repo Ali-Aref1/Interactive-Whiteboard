@@ -28,13 +28,11 @@ function setupSocket(server) {
     broadcastUserList(io);
     socket.emit('canvas-data', canvasData);
 
-    socket.on('user-auth', userData => {
+    socket.on('new-login', userData => {
       if (!userData.userId) return;
       // remove old entry + add new
-      console.log("TEEST!!!!!!!")
       const idx = users.findIndex(u => u.socketId === socket.id);
       if (idx !== -1) users.splice(idx,1);
-      console.log('All users with username', userData.username, ':', users.filter(u => u.username === userData.username));
       if (users.some(u => u.username === userData.username && u.socketId !== socket.id)) {
         console.log("found duplicate user: " + userData.username);
         socket.emit('auth-error', { message: 'Username already connected.' });
@@ -65,20 +63,20 @@ function setupSocket(server) {
       }
     })
 
-    socket.on('new-login', (data) => {
-      users.push(
-        {
-          socketId: socket.id,
-          userId:   data.userId || -1,
-          username: data.username || "User",
-          email:    data.email || "",
-          mouse:    { x:0, y:0 }
-        }
-      )
-      console.log(users)
-      broadcastUserList(io)
+    // socket.on('new-login', (data) => {
+    //   users.push(
+    //     {
+    //       socketId: socket.id,
+    //       userId:   data.userId || -1,
+    //       username: data.username || "User",
+    //       email:    data.email || "",
+    //       mouse:    { x:0, y:0 }
+    //     }
+    //   )
+    //   console.log(users)
+    //   broadcastUserList(io)
     
-    });
+    // });
 
     socket.on('canvas-data', data => {
       canvasData = data;
