@@ -25,6 +25,7 @@ export const Login = () => {
                 body: JSON.stringify(form),
             });
             const data = await response.json();
+            console.log(data)
             if (!response.ok) {
                 window.alert(data.error || 'Login failed');
             } else {
