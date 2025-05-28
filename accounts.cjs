@@ -61,6 +61,17 @@ async function updateUser(id, email, password) {
   return result.affectedRows;
 }
 
+async function updateAvatarUrl(username, avatarUrl) {
+  const sql = 'UPDATE usertable SET avatarUrl = ? WHERE username = ?';
+  const [result] = await pool.query(sql, [avatarUrl, username]);
+  return result.affectedRows;
+}
+async function updatePrefColor(username, prefColor) {
+  const sql = 'UPDATE usertable SET prefColor = ? WHERE username = ?';
+  const [result] = await pool.query(sql, [prefColor, username]);
+  return result.affectedRows;
+}
+
 async function deleteUser(id) {
   const sql = 'DELETE FROM usertable WHERE id = ?';
   const [result] = await pool.query(sql, [id]);
@@ -74,4 +85,6 @@ module.exports = {
   getUserById,
   updateUser,
   deleteUser,
+  updateAvatarUrl,
+  updatePrefColor
 };

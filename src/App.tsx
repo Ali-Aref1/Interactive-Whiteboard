@@ -19,7 +19,7 @@ function App() {
   return (
     <UserContext.Provider value={{ user, setUser }}>
       <SocketContext.Provider value={socket}>
-        <ChakraProvider>
+        <ChakraProvider resetCSS={false}>
           <Router />
         </ChakraProvider>
       </SocketContext.Provider>

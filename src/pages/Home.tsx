@@ -3,6 +3,7 @@ import { ThemeSwitcher } from "../components/ThemeSwitcher";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/useAuth";
 import { handleLogout } from "../utils";
+import { FaGear } from "react-icons/fa6";
 
 export const Home = () => {
   const { colorMode } = useColorMode();
@@ -14,7 +15,16 @@ export const Home = () => {
     : "bg-[#F7F8FA] text-black border-gray-500! border-2! hover:shadow-[0_0_16px_4px_rgba(0,102,255,0.25)]";
   return (
     <>
-    <div className='flex justify-end absolute w-full p-2 z-20'><ThemeSwitcher/></div>
+    <div className='flex justify-end absolute w-full p-2 z-20 gap-5'>
+      <Link to="/settings">
+      <FaGear
+      size={30}
+      className="transition-transform duration-300 hover:animate-spin hover:scale-125"
+      style={{ cursor: "pointer" }}
+      />
+      </Link>
+      <ThemeSwitcher />
+    </div>
     <div className="bg-home relative h-screen flex flex-col">
       {/* Top bar */}
       <div className="flex items-center justify-between px-8 py-6">

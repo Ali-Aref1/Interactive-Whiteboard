@@ -3,7 +3,6 @@
     src: url("./assets/fonts/SF-Pro.ttf");
 }
 body{
-    margin-top: 20px;
     font-family: 'SF Pro' !important;
     transition: background-color 200ms linear !important;
     min-height:100vh;

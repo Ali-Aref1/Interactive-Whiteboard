@@ -26,11 +26,11 @@ export const Container: React.FC = () => {
   };
 
   return (
-    <div className="bg-home relative h-screen flex flex-col">
+    <div className="bg-home relative h-screen flex flex-col overflow-hidden">
     <div className="flex flex-col w-[calc(100%-60px)] h-[calc(100vh-60px)] m-[10px_30px]">
       <div className={`z-10 flex fixed top-[-3px] px-[15px] rounded-b-[20px] justify-between items-center w-[calc(100%-60px)] h-[60px] ${isDarkMode?"bg-[#1c2330]":"bg-[#dfdfdf]"} transition-colors!`}>
         <div className="flex items-center gap-5 h-[45px]">
-          <Link to="/" className={`border-4! ${isDarkMode?"border-white!":"border-[#10141D]!"} transition-all duration-200 p-1 border-solid rounded-full cursor-pointer flex justify-center items-center transition-all duration-200 hover:scale-110`} onClick={() => window.location.href = '/'}>  
+          <Link to="/" className={`border-4! ${isDarkMode?"border-white!":"border-[#10141D]!"} transition-all duration-200 p-1 border-solid rounded-full cursor-pointer flex justify-center items-center hover:scale-110`}>  
             <FaHome size={30} />
           </Link>
           <input

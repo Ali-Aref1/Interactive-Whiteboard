@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState, forwardRef, useImperativeHandle } from 'react';
-import { User, UserBoardData } from './interfaces/User';
+import { User } from './interfaces/User';
 import { MousePointer } from './MousePointer';
 import { useSocket } from '../contexts/useSocket';
 import { useAuth } from '../contexts/useAuth'; // <-- import useAuth
@@ -42,7 +42,11 @@ export const Board = forwardRef<BoardRef, BoardProps>(({ color, tool, size }, re
   useEffect(() => {
 
     const handleListUsers = (usersList: User[]) => {
+
       setUsers(usersList);
+      console.log("users:",usersList);
+      console.log(socket.id);
+      console.log(users[0].socketId);
     };
     
     socket.on('list-users', handleListUsers);
@@ -69,6 +73,7 @@ export const Board = forwardRef<BoardRef, BoardProps>(({ color, tool, size }, re
       socket.off('list-users', handleListUsers);
     };
   }, [socket]); // Only re-register if socket changes
+
 
   const listUsers = (users: User[]) => {
     setUsers(users);
@@ -99,7 +104,6 @@ export const Board = forwardRef<BoardRef, BoardProps>(({ color, tool, size }, re
     if (temp === dataURL) {
       return;
     }
-    console.log(socket.connected);
     if(socket && socket.connected){
     socket.emit('canvas-data', dataURL);
     console.log("Canvas data sent");
@@ -112,17 +116,20 @@ const lastEmitRef = useRef<number>(0);
 
 const handleTrackMouse = (event: MouseEvent) => {
   const now = Date.now();
-  
-  if (now - lastEmitRef.current < 25) return; // Emit at most every 50ms
+
+  if (now - lastEmitRef.current < 25) return; // Emit at most every 25ms
   lastEmitRef.current = now;
   const canvas = canvasRef.current;
   if (!canvas || !event) return;
   const rect = canvas.getBoundingClientRect();
-  const x = event.clientX - rect.left;
-  const y = event.clientY - rect.top;
-  setMouse({ x, y });
-  
-  socket.emit('track-mouse', { x, y });
+
+  // Calculate relative x and y in the range [0, 1720] and [0, 700]
+  const relX = ((event.clientX - rect.left) / rect.width) * 1720;
+  const relY = ((event.clientY - rect.top) / rect.height) * 700;
+
+  setMouse({ x: relX, y: relY });
+
+  socket.emit('track-mouse', { x: relX, y: relY });
 };
 
 const handleLogOutElsewhere = () => {
@@ -184,43 +191,20 @@ const handleLogOutElsewhere = () => {
       canvas.dispatchEvent(mouseEvent);
     };
 
-    // Correct typing for incoming mouse tracking data
-    interface TrackMouseData {
-      id: string;
-      mouse: UserBoardData['mouse'];
-      userId: number;
-      username: string;
-      email: string;
-    }
 
-    const handleMouseUpdate = (data: TrackMouseData) => {
+    const handleMouseUpdate = (data: {id:string,mouse:{x:number,y:number}}) => {
       if (data.id === socket.id) return;
-      setUsers(users => {
-        const exists = users.some(user => user.boardData?.socketId === data.id);
-        if (exists) {
-          return users.map(user =>
-            user.boardData?.socketId === data.id
-              ? {
-                  ...user,
-                  userId: data.userId,
-                  username: data.username,
-                  email: data.email,
-                  boardData: { ...user.boardData, mouse: data.mouse }
-                }
-              : user
-          );
-        } else {
-          return [
-            ...users,
-            {
-              userId: data.userId,
-              username: data.username,
-              email: data.email,
-              boardData: { socketId: data.id, mouse: data.mouse }
-            }
-          ];
-        }
-      });
+      console.log("Mouse update from:", data.id, "Mouse position:", data.mouse);
+      setUsers(users =>
+        users.map(user =>
+          user.socketId === data.id
+            ? {
+                ...user,
+                mouse:data.mouse
+              }
+            : user
+        )
+      );
     };
 
     const handleTouchMove = (event: TouchEvent) => {
@@ -313,9 +297,9 @@ const handleLogOutElsewhere = () => {
       height={700}
       ></canvas>
       {users
-        .filter((user) => user.boardData?.socketId !== socket.id)
+        .filter((user) => user.socketId !== socket.id)
         .map((user) => (
-          <MousePointer user={user} key={user.boardData?.socketId} localMouse={mouse} />
+          <MousePointer user={user} key={user.socketId} localMouse={mouse} />
         ))}
       <Modal isOpen={!!error} onClose={() => setError(null)} isCentered size={"lg"}>
         <ModalOverlay />

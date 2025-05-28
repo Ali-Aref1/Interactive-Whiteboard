@@ -10,6 +10,7 @@ function setupSocket(server) {
     cors:{ methods:['GET','POST'] }
   });
   function broadcastUserList(io) {
+    console.log('Broadcasting user list:', users);
   const payload = users.map(u => ({
     userId:   u.userId,
     username: u.username,
@@ -19,17 +20,16 @@ function setupSocket(server) {
       mouse:    u.mouse
     }
   }));
-  io.emit('list-users', payload);
+  io.emit('list-users', users);
 }
-const addUser = (userData,socketId) => {
-  if (!userData.userId) return;
+const addUser = (socketUser) => {
+  console.log(socketUser);
+  if (!socketUser.id) return;
         users.push({
-        socketId: socketId,
-        userId:   userData.userId,
-        username: userData.username,
-        email:    userData.email,
+        ...socketUser,
         mouse:    { x:0, y:0 }
       });
+      console.log(users);
       broadcastUserList(io);
     }
 
@@ -39,9 +39,9 @@ const addUser = (userData,socketId) => {
     // initial list
     broadcastUserList(io);
     socket.emit('canvas-data', canvasData);
-
     socket.on('new-login', userData => {
-      if (!userData.userId) return;
+      const socketUser=({...userData, socketId: socket.id});
+      if (!userData.id) return;
       // remove old entry + add new
       const idx = users.findIndex(u => u.socketId === socket.id);
       if (idx !== -1) users.splice(idx,1);
@@ -50,7 +50,8 @@ const addUser = (userData,socketId) => {
         socket.emit('auth-error', { message: 'Username already connected.' });
         return;
       }
-      addUser(userData,socket.id);
+      
+      addUser(socketUser);
 
     });
 
@@ -74,7 +75,6 @@ const addUser = (userData,socketId) => {
     });
 
     socket.on('clear-canvas', () => {
-      console.log("Canvas cleared by user: " + socket.id);
       canvasData = null;
       socket.broadcast.emit('canvas-data', canvasData);
     });
@@ -87,10 +87,7 @@ const addUser = (userData,socketId) => {
       }
       const out = {
         id: socket.id,
-        mouse: data,
-        userId: user ? user.userId : -1,
-        username: user ? user.username : "User",
-        email: user ? user.email : ""
+        mouse: data
       };
       socket.broadcast.emit('track-mouse', out);
     });

@@ -26,13 +26,8 @@ export const handleLogin = async (
             window.alert(data.error || 'Login failed');
         } else {
             if (data) {
-                const newData = {
-                    userId: data.id,
-                    username: data.username,
-                    email: data.email
-                }
-                setUser(newData);
-                localStorage.setItem('InkSyncUser', JSON.stringify(newData));
+                setUser(data);
+                localStorage.setItem('InkSyncUser', JSON.stringify(data));
                 Navigate('/');
             } else {
                 window.alert('Login successful but no user data returned');

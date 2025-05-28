@@ -4,6 +4,7 @@ import { Container } from "./pages/Container";
 import { NotFound } from "./pages/NotFound";
 import { Register } from "./pages/Register";
 import { Login } from "./pages/Login";
+import { Settings } from "./pages/Settings";
 
 let router = createBrowserRouter([
   {
@@ -17,6 +18,9 @@ let router = createBrowserRouter([
   {
     path:"/register",
     element: <Register />,
+  },
+  {path:"/settings",
+    element:<Settings/>
   },
   {
     path: "/draw",
