@@ -34,6 +34,7 @@ function setupSocket(server) {
       const idx = users.findIndex(u => u.socketId === socket.id);
       if (idx !== -1) users.splice(idx,1);
       if (users.some(u => u.username === userData.username)) {
+        console.log("found duplicate user: " + userData.username);
         socket.emit('auth-error', { message: 'Username already connected.' });
         return;
       }
