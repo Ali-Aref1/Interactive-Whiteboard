@@ -50,7 +50,7 @@ function setupSocket(server) {
     });
 
     socket.on('logmeout',()=>{
-      const user = users.find(u => u.socketId === socket.id);
+      const user = users.find(u => u.username === userData.username && u.socketId !== socket.id);
       console.log(`user ${user} requested logout`)
       if (user) {
         const sameUsernameSockets = users.filter(u => u.username === user.username && u.socketId !== socket.id);
