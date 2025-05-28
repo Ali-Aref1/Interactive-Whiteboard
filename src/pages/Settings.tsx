@@ -70,7 +70,7 @@ const handleUpload = async (e: React.FormEvent) => {
 const handleSubmitColorChange = async (e: React.FormEvent) => {
   e.preventDefault();
   if (!user) return;
-  const response = await fetch("http://localhost:3001/color-change", {
+  const response = await fetch(`http://${window.location.hostname}:3001/color-change`, {
     method: "POST",
     headers: {
     "Content-Type": "application/json",
