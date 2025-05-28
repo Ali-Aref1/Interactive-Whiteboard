@@ -22,7 +22,7 @@ async function createUser(username, email, password) {
     const password_hash = await bcrypt.hash(password, 10);
     const sql = 'INSERT INTO usertable (username, email, password_hash) VALUES (?, ?, ?)';
     const [result] = await pool.query(sql, [username, email, password_hash]);
-    return result.insertId;
+    return {id:result.insertId,username};
 }
 
 async function getUserByUsername(username) {

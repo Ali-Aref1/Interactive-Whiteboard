@@ -3,6 +3,7 @@ import { Home } from "./pages/Home";
 import { Container } from "./pages/Container";
 import { NotFound } from "./pages/NotFound";
 import { Register } from "./pages/Register";
+import { Login } from "./pages/Login";
 
 let router = createBrowserRouter([
   {
@@ -10,9 +11,12 @@ let router = createBrowserRouter([
     element: <Home />,
   },
   {
+    path: "/login",
+    element: <Login/>
+  },
+  {
     path:"/register",
     element: <Register />,
-
   },
   {
     path: "/draw",
