@@ -31,6 +31,7 @@ function setupSocket(server) {
     socket.on('user-auth', userData => {
       if (!userData.userId) return;
       // remove old entry + add new
+      console.log("TEEST!!!!!!!")
       const idx = users.findIndex(u => u.socketId === socket.id);
       if (idx !== -1) users.splice(idx,1);
       console.log('All users with username', userData.username, ':', users.filter(u => u.username === userData.username));
