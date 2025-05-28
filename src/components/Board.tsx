@@ -4,6 +4,8 @@ import { MousePointer } from './MousePointer';
 import { useSocket } from '../contexts/useSocket';
 import { useAuth } from '../contexts/useAuth'; // <-- import useAuth
 import { Navigate } from 'react-router-dom';
+import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, Button} from '@chakra-ui/react';
+import { useNavigate } from 'react-router-dom';
 
 var temp: string = "";
 
@@ -17,24 +19,53 @@ export interface BoardRef {
   clearCanvas: () => void;
 }
 
+interface ErrorType{
+  message: string;
+  id: string;
+}
+
 export const Board = forwardRef<BoardRef, BoardProps>(({ color, tool, size }, ref) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
-  
+  const [error, setError] = useState<ErrorType | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   const socket = useSocket();
   const { user } = useAuth(); // <-- get user and setUser from context
+  const nav= useNavigate();
   if(!user) return <Navigate to="/login" replace={true} />; // Redirect to login if user is not authenticated
+
+  const handleLogout = () => {
+    socket.close();
+    nav("/");
+  };
   useEffect(() => {
+
+    const handleListUsers = (usersList: User[]) => {
+      setUsers(usersList);
+    };
+    
+    socket.on('list-users', handleListUsers);
     const handleConnect = () => {
       socket.emit('new-login',user);
     };
+
+    socket.on('auth-error',()=>{
+      setError({message:"You are already logged in from another window. Would you like to connect here instead?", id: "auth-error"});
+      
+    })
     
     socket.on('connect', handleConnect);
+
+    socket.on('logout',()=>{
+      socket.close();
+      setError({message:"You have been logged out from another window.", id: "logout"});
+
+    })
     
     // Clean up event listener on unmount
     return () => {
       socket.off('connect', handleConnect);
+      socket.off('list-users', handleListUsers);
     };
   }, [socket]); // Only re-register if socket changes
 
@@ -90,6 +121,11 @@ const handleTrackMouse = (event: MouseEvent) => {
   const y = event.clientY - rect.top;
   socket.emit('track-mouse', { x, y });
 };
+
+const handleLogOutElsewhere = () => {
+  socket.emit('logmeout', user);
+  setError(null);
+}
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -249,17 +285,6 @@ const handleTrackMouse = (event: MouseEvent) => {
     };
   }, []);
 
-  useEffect(() => {
-    const handleListUsers = (usersList: User[]) => {
-      setUsers(usersList);
-    };
-    
-    socket.on('list-users', handleListUsers);
-    
-    return () => {
-      socket.off('list-users', handleListUsers);
-    };
-  }, [socket]);
 
   return (
     <div
@@ -288,6 +313,20 @@ const handleTrackMouse = (event: MouseEvent) => {
         .map((user) => (
           <MousePointer user={user} key={user.boardData?.socketId} />
         ))}
+      <Modal isOpen={!!error} onClose={() => setError(null)}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Error</ModalHeader>
+          <ModalBody>
+            {error?.message}
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme="blue" onClick={() => {error?.id=="auth-error"?handleLogOutElsewhere:error?.id=="logout"?handleLogout():setError(null)}}>
+              OK
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </div>
   );
 });

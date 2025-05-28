@@ -33,6 +33,10 @@ function setupSocket(server) {
       // remove old entry + add new
       const idx = users.findIndex(u => u.socketId === socket.id);
       if (idx !== -1) users.splice(idx,1);
+      if (users.some(u => u.username === userData.username)) {
+        socket.emit('auth-error', { message: 'Username already connected.' });
+        return;
+      }
       users.push({
         socketId: socket.id,
         userId:   userData.userId,
@@ -43,6 +47,20 @@ function setupSocket(server) {
       // now broadcast in correct shape
       broadcastUserList(io);
     });
+
+    socket.on('logmeout',()=>{
+      const user = users.find(u => u.socketId === socket.id);
+      if (user) {
+        const sameUsernameSockets = users.filter(u => u.username === user.username && u.socketId !== socket.id);
+        sameUsernameSockets.forEach(u => {
+          io.to(u.socketId).emit('logout');
+        });
+        // Remove the sender from users
+        const idx = users.findIndex(u => u.socketId === socket.id);
+        if (idx !== -1) users.splice(idx, 1);
+        broadcastUserList(io);
+      }
+    })
 
     socket.on('new-login', (data) => {
       users.push(
