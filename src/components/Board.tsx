@@ -55,14 +55,14 @@ export const Board = forwardRef<BoardRef, BoardProps>(({ color, tool, size }, re
 
   // Emit user-auth event after socket connects and user is available
   useEffect(() => {
-    if (socket && socket.connected && user) {
+    if (socket && socket.connected && user && !user.userId) {
       socket.emit('user-auth', {
         userId: user.userId,
         username: user.username,
         email: user.email,
       });
     }
-  }, [socket, socket?.connected, user]);
+  }, [socket?.connected, user]);
 
   const clearCanvas = () => {
     const canvas = canvasRef.current;
