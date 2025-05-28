@@ -51,6 +51,7 @@ export const Board = forwardRef<BoardRef, BoardProps>(({ color, tool, size }, re
 
   useEffect(() => {
     console.log("users:",users)}, [users]);
+    console.log("user:", user);
 
   // Emit user-auth event after socket connects and user is available
   useEffect(() => {
