@@ -10,6 +10,7 @@ export const Settings = () => {
   const { colorMode } = useColorMode();
   const isDark = colorMode === "dark";
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const server = `${window.location.hostname}:3001`;
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -46,7 +47,7 @@ const handleUpload = async (e: React.FormEvent) => {
         formData.append("username", user.username);
         formData.append("file", selectedFile);
 
-        const response = await fetch(`http://${window.location.hostname}:3001/profile-pic`, {
+        const response = await fetch(`http://${server}/profile-pic`, {
             method: "POST",
             body: formData,
         });
@@ -70,7 +71,7 @@ const handleUpload = async (e: React.FormEvent) => {
 const handleSubmitColorChange = async (e: React.FormEvent) => {
   e.preventDefault();
   if (!user) return;
-  const response = await fetch(`http://${window.location.hostname}:3001/color-change`, {
+  const response = await fetch(`http://${server}/color-change`, {
     method: "POST",
     headers: {
     "Content-Type": "application/json",
