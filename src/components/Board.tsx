@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState, forwardRef, useImperativeHandle } from 'react';
-import { User } from './interfaces/User';
+import { User, UserBoardData } from './interfaces/User';
 import { MousePointer } from './MousePointer';
 import { useSocket } from '../contexts/useSocket';
 
@@ -124,16 +124,33 @@ const handleTrackMouse = (event: MouseEvent) => {
       });
       canvas.dispatchEvent(mouseEvent);
     };
-    const handleMouseUpdate = (data: any) => {
+
+    // Correct typing for incoming mouse tracking data
+    interface TrackMouseData {
+      id: string;
+      mouse: UserBoardData['mouse'];
+    }
+
+    const handleMouseUpdate = (data: TrackMouseData) => {
       if (data.id === socket.id) return; // Ignore own mouse updates
       setUsers(users =>
-        users.some(user => user.id === data.id)
+        users.some(user => user.boardData.socketId === data.id)
           ? users.map(user =>
-              user.id === data.id ? { ...user, mouse: data.mouse } : user
+              user.boardData.socketId === data.id
+                ? { ...user, boardData: { ...user.boardData, mouse: data.mouse } }
+                : user
             )
-          : [...users, { id: data.id, name: "User", mouse: data.mouse }]
+          : [
+              ...users,
+              {
+                userId: -1,
+                name: "User",
+                email: "",
+                boardData: { socketId: data.id, mouse: data.mouse },
+              },
+            ]
       );
-    }
+    };
 
     const handleTouchMove = (event: TouchEvent) => {
       event.preventDefault();
@@ -223,9 +240,11 @@ const handleTrackMouse = (event: MouseEvent) => {
       width={1720}
       height={700}
       ></canvas>
-      {users.filter((user)=>{return user.id!=socket.id}).map((user) => (
-        <MousePointer user={user} key={user.id} />
-      ))} 
+      {users
+        .filter((user) => user.boardData.socketId !== socket.id)
+        .map((user) => (
+          <MousePointer user={user} key={user.boardData.socketId} />
+        ))}
     </div>
   );
 });

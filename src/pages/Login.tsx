@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useColorMode } from '@chakra-ui/react';
 import { ThemeSwitcher } from '../components/ThemeSwitcher';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../contexts/useAuth'
 
 export const Login = () => {
     const { colorMode } = useColorMode();
@@ -27,7 +28,14 @@ export const Login = () => {
             if (!response.ok) {
                 window.alert(data.error || 'Login failed');
             } else {
-                console.log('Login response:', data);
+                const { user } = data;
+                if (user) {
+                    const { setUser } = useAuth();
+                    setUser(user);
+                    window.location.href = '/draw';
+                } else {
+                    window.alert('Login successful but no user data returned');
+                }
             }
         } catch (error) {
             window.alert(error instanceof Error ? error.message : 'An unexpected error occurred');

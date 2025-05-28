@@ -1,22 +1,26 @@
 import './App.css'
 import { ChakraProvider } from '@chakra-ui/react'
 import { SocketContext } from './contexts/useSocket'
+import { UserContext} from './contexts/useAuth'
 import { io } from "socket.io-client"
 import { Router } from './Router'
-
-
-const socket = io(`${window.location.hostname}:3001`, { autoConnect: false });
-
+import {useState} from 'react'
+import { User } from './components/interfaces/User'
 
 
 function App() {
+  const socket = io(`${window.location.hostname}:3001`, { autoConnect: false });
+  const [user, setUser] = useState<User | null>(null);
+
   return (
-    <SocketContext.Provider value={socket}>
-      <ChakraProvider>
-        <Router />
-      </ChakraProvider>
-    </SocketContext.Provider>
-  )
+    <UserContext.Provider value={{ user, setUser }}>
+      <SocketContext.Provider value={socket}>
+        <ChakraProvider>
+          <Router />
+        </ChakraProvider>
+      </SocketContext.Provider>
+    </UserContext.Provider>
+  );
 }
 
 export default App

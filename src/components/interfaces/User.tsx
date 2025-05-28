@@ -1,8 +1,14 @@
 export interface User {
-    id: any;
-    mouse: {
+    userId: number;
+    name: string;
+    email: string;
+    boardData: UserBoardData;
+}
+
+export interface UserBoardData{
+    socketId: string;
+    mouse:{
         x: number;
         y: number;
-    };
-    name: string;
+    }
 }
