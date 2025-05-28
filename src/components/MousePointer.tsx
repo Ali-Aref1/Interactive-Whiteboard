@@ -6,6 +6,7 @@ interface MousePointerProps {
 }
 
 export const MousePointer = ({ user }: MousePointerProps) => {
+    console.log("MousePointer rendered for user:", user);
     return (
         <div className="flex flex-col items-center justify-center w-fit z-10 absolute" style={{ left: user.boardData?.mouse.x, top: user.boardData?.mouse.y }}>
             <div className="bg-red-500 w-fit p-1 rounded-full rounded-tl-none">
