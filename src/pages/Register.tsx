@@ -2,13 +2,18 @@ import React, { useState } from 'react';
 import { useColorMode } from '@chakra-ui/react';
 import { ThemeSwitcher } from '../components/ThemeSwitcher';
 import { Link } from 'react-router-dom';
+import { handleLogin } from '../utils';
+import { useAuth } from '../contexts/useAuth';
+import { useNavigate } from 'react-router-dom';
+
 
 export const Register = () => {
     const { colorMode } = useColorMode();
     const isDarkMode = colorMode === 'dark';
     const [form, setForm] = useState({ username: '', email: '', password: '' });
     const server = `${window.location.hostname}:3001`;
-
+    const { setUser } = useAuth();
+    const navigate = useNavigate();
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
@@ -26,6 +31,11 @@ export const Register = () => {
             if (!response.ok) {
                 const errorData = await response.json();
                 window.alert(errorData.error || 'Registration failed');
+            }
+            else{
+                const { email, ...loginForm } = form;
+                handleLogin(loginForm, setUser, navigate);
+                handleLogin
             }
         } catch (error) {
             window.alert(error instanceof Error ? error.message : 'An unexpected error occurred');

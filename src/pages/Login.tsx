@@ -2,17 +2,18 @@ import React, { useState } from 'react';
 import { useColorMode } from '@chakra-ui/react';
 import { ThemeSwitcher } from '../components/ThemeSwitcher';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../contexts/useAuth'
+import { handleLogin } from '../utils';
+import { useAuth } from '../contexts/useAuth';
 import { useNavigate } from 'react-router-dom';
 
 export const Login = () => {
     const { colorMode } = useColorMode();
-    const Navigate = useNavigate();
+    const { setUser } = useAuth();
+    const navigate = useNavigate();
+
     const isDarkMode = colorMode === 'dark';
     const [form, setForm] = useState({ username: '', password: '' });
-    const server = `${window.location.hostname}:3001`;
-
-    const { setUser } = useAuth();
+    
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setForm({ ...form, [e.target.name]: e.target.value });
@@ -21,33 +22,12 @@ export const Login = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const response = await fetch(`http://${server}/login`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(form),
-            });
-            const data = await response.json();
-            console.log(data)
-            if (!response.ok) {
-                window.alert(data.error || 'Login failed');
-            } else {
-                if (data) {
-                    const newData = {
-                        userId: data.id,
-                        username: data.username,
-                        email: data.email
-                    }
-                    setUser(newData);
-                    Navigate('/draw');
-                } else {
-                    window.alert('Login successful but no user data returned');
-                }
-            }
+            await handleLogin(form, setUser, navigate);
         } catch (error) {
+            console.error('Login failed:', error);
             window.alert(error instanceof Error ? error.message : 'An unexpected error occurred');
         }
+
     };
 
     return (
