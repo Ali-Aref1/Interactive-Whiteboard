@@ -29,6 +29,7 @@ export const Board = forwardRef<BoardRef, BoardProps>(({ color, tool, size }, re
   const [isDrawing, setIsDrawing] = useState(false);
   const [error, setError] = useState<ErrorType | null>(null);
   const [users, setUsers] = useState<User[]>([]);
+  const [mouse, setMouse] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const socket = useSocket();
   const { user } = useAuth(); // <-- get user and setUser from context
   const nav= useNavigate();
@@ -111,14 +112,16 @@ const lastEmitRef = useRef<number>(0);
 
 const handleTrackMouse = (event: MouseEvent) => {
   const now = Date.now();
+  
   if (now - lastEmitRef.current < 25) return; // Emit at most every 50ms
-
   lastEmitRef.current = now;
   const canvas = canvasRef.current;
   if (!canvas || !event) return;
   const rect = canvas.getBoundingClientRect();
   const x = event.clientX - rect.left;
   const y = event.clientY - rect.top;
+  setMouse({ x, y });
+  
   socket.emit('track-mouse', { x, y });
 };
 
@@ -312,7 +315,7 @@ const handleLogOutElsewhere = () => {
       {users
         .filter((user) => user.boardData?.socketId !== socket.id)
         .map((user) => (
-          <MousePointer user={user} key={user.boardData?.socketId} />
+          <MousePointer user={user} key={user.boardData?.socketId} localMouse={mouse} />
         ))}
       <Modal isOpen={!!error} onClose={() => setError(null)} isCentered size={"lg"}>
         <ModalOverlay />

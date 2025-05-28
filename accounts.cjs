@@ -1,6 +1,8 @@
 require('dotenv').config();
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcrypt');
+const AWS = require('aws-sdk');
+const sns = new AWS.SNS({ region: 'us-east-1' });
 
 const pool = mysql.createPool({
     host: process.env.DB_HOST,
@@ -22,6 +24,14 @@ async function createUser(username, email, password) {
     const password_hash = await bcrypt.hash(password, 10);
     const sql = 'INSERT INTO usertable (username, email, password_hash) VALUES (?, ?, ?)';
     const [result] = await pool.query(sql, [username, email, password_hash]);
+    if (result.affectedRows > 0) {
+      const params = {
+      Message: `New user registered: ${username} (${email})`,
+      TopicArn: 'arn:aws:sns:us-east-1:033369163956:NewUserRegistered',
+          
+  };
+    await sns.publish(params).promise();
+    }
     return {id:result.insertId,username};
 }
 
