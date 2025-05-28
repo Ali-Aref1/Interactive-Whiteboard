@@ -12,6 +12,8 @@ export const Login = () => {
     const [form, setForm] = useState({ username: '', password: '' });
     const server = `${window.location.hostname}:3001`;
 
+    const { setUser } = useAuth();
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
@@ -32,8 +34,6 @@ export const Login = () => {
                 window.alert(data.error || 'Login failed');
             } else {
                 if (data) {
-                    const { setUser } = useAuth();
-
                     setUser(data);
                     Navigate('/draw');
                 } else {
